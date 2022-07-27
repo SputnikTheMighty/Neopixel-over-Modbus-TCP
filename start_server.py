@@ -22,12 +22,12 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         self.pixels = neopixelsim.Pixel(len(values))
         super().__init__(address, values)
 
-    def setValues(self, address, value):  # pylint: disable=arguments-differ
-        super().setValues(address, value)
+    def setValues(self, address, values):  # pylint: disable=arguments-differ
+        super().setValues(address, values)
         
-        for i in range(len(value)):
-            self.pixels[address] = [value, value, value]
-            print(F"pixel {i} set to {value}")
+        for i, colour in enumerate(values):
+            self.pixels[i] = colour
+            print(F"pixel {i} set to {colour}")
 
 
 def run_callback_server():
