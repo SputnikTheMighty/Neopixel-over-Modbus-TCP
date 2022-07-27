@@ -1,7 +1,13 @@
 from math import ceil
 from pymodbus.client.sync import ModbusTcpClient
 
-client = ModbusTcpClient('192.168.0.232', port=5020)
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-a", "--address", required=True)
+args = parser.parse_args()
+
+client = ModbusTcpClient(args.address, port=5020)
 client.connect()
 assert client.is_socket_open()
 
@@ -14,7 +20,7 @@ num_frames = 150
 REGISTERS_PER_PIXEL = 2
 MAX_REG_PER_MESSAGE = 124
 
-# Write each LED separately
+# Write each LED separately (waaay too slow)
 # tic = time.perf_counter()
 # for frame in range(num_frames):
 #     for reg in range(num_leds):

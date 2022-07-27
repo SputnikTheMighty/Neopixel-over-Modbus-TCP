@@ -1,11 +1,19 @@
 # Neopixel over Modbus TCP
 
+This repository aims to remotely control a set of Neopixels via a Modbus TCP server running on a RaspberryPi.
+
+## Setup
+### On Raspberry Pi
+- run `start_server.py`
+
+### On Client
+- to test run `test_write_time.py`
+
 ## Register Layout
+One modbus register is 16 bytes. 3 bytes are needed per pixel, so 2 registers are used per pixel. The global brightness can be controlled via it's own register.
 
 ```
    ┌──────────────────┐
-   │Render            │
-   ├──────────────────┤
    │Global Brightness │
    ├──────────────────┤
    │Pixel 0 RED BLUE  │
@@ -28,7 +36,7 @@
 ## Setting up modbus tcp server on local host
 
 **Linux only**  
-Modbus runs on port 502. Regular user does not have access to this. Change the port number in `start_tcp_server.py` to 5020 and  redirect traffic with:
+Modbus runs on port 502. Regular user does not have access to this. You may need to redirect traffic with:
 
 ```
 sudo iptables -t nat -A PREROUTING -p tcp --dport 502 -j REDIRECT --to-ports 5020
