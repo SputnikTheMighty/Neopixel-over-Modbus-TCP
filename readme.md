@@ -4,10 +4,10 @@ This repository aims to remotely control a set of Neopixels via a Modbus TCP ser
 
 ## Setup
 ### On Raspberry Pi
-- run `start_server.py`
+- run `start_server.py -n <number of neopixels>`
 
 ### On Client
-- to test run `test_write_time.py`
+- to test run `test_write_time.py -a <ip address of server>`
 
 ## Register Layout
 One modbus register is 16 bytes. 3 bytes are needed per pixel, so 2 registers are used per pixel. The global brightness can be controlled via it's own register.

@@ -10,7 +10,18 @@ from pymodbus.datastore import (
 from pymodbus.server.asynchronous import StartTcpServer
 from pymodbus.version import version
 
-import neopixelsim
+try:
+    import neopixel
+except NotImplementedError:
+    import neopixelsim as neopixel
+
+REGISTERS_PER_PIXEL = 2
+
+from enum import IntEnum
+
+class register(IntEnum):
+    GLOBAL_BRIGHTNESS = 0
+    PIXEL_START = 1
 
 class CallbackDataBlock(ModbusSequentialDataBlock):
     """A datablock that stores the new value in memory,
@@ -19,21 +30,25 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
     """
 
     def __init__(self, address, values):
-        self.pixels = neopixelsim.Pixel(len(values))
+        self.pixels = neopixel.Pixel(len(values)/2 + 1, auto_write=True) # +1 for global brightness
         super().__init__(address, values)
 
     def setValues(self, address, values):  # pylint: disable=arguments-differ
         super().setValues(address, values)
+
+        if address == register.GLOBAL_BRIGHTNESS:
+            self.pixels.set_brightness(values[0])
+        
         
         for i, colour in enumerate(values):
             self.pixels[i] = colour
             print(F"pixel {i} set to {colour}")
 
 
-def run_callback_server():
+def run_callback_server(num):
     """Run callback server."""
 
-    block = CallbackDataBlock(0, [0]*100)
+    block = CallbackDataBlock(0, [0]*2*num)
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
     context = ModbusServerContext(slaves=store, single=True)
 
@@ -41,4 +56,9 @@ def run_callback_server():
 
 
 if __name__ == "__main__":
-    run_callback_server()
+
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
+    args = parser.parse_args()
+    run_callback_server(args.num)

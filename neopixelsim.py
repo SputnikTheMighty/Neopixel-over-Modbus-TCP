@@ -15,12 +15,16 @@ class Pixel:
         self._pixels = n
         self._bytes = bpp * n
         self.pixel_array = [ [0]*bpp for i in range(n)]
+        self._brightness = 1
 
     def show(self):
         print("rendering!")
 
     def fill(self):
         pass
+
+    def set_brightness(self, value):
+        self._brightness = value
 
     def __len__(self):
         """
