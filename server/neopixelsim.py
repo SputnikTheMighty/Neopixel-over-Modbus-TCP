@@ -37,13 +37,13 @@ class Pixel:
         return len(self)
 
     def __setitem__(self, index, colour):
-        print("setting item!")
         if isinstance(colour, tuple):
-            print("setting tuple")
             self.pixel_array[index] = colour
         elif isinstance(colour, int):
-            print("setting int")
             self.pixel_array[index] = (((colour&0xFF0000) >> 16), ((colour&0x00FF00) >> 8), ((colour&0x0000FF) >> 0))
+        elif isinstance(colour, bytes):
+            self.pixel_array[index] = (colour[0], colour[1], colour[2])
+
 
     def __getitem__(self, index):
         return self.pixel_array[index]

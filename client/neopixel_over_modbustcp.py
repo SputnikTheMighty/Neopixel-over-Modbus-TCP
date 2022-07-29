@@ -16,7 +16,7 @@ class Registers:
 
 class NeoPixel:
 
-    def __init__(self, n, brightness, host, *args, **kwargs) -> None:
+    def __init__(self, host, n, brightness=0.5, *args, **kwargs) -> None:
         self._brightness = brightness
         self._num_pixels = n
         self._buf = [0 for i in range(2 * n)]
@@ -34,14 +34,15 @@ class NeoPixel:
     def show(self):
         ''' Send entire pixel array over Modbus TCP '''
         for msg in range(self.num_msgs):
-            address = msg * MAX_REG_PER_MESSAGE + Registers.START_OF_PIXELS
+            address = (msg * MAX_REG_PER_MESSAGE) + Registers.START_OF_PIXELS - 1
+            index = (msg * MAX_REG_PER_MESSAGE)
             if msg < self.num_msgs - 1:
                 # full message
-                result = self._client.write_registers(address, self._buf[address : address + MAX_REG_PER_MESSAGE])
+                result = self._client.write_registers(address, self._buf[index : index + MAX_REG_PER_MESSAGE])
                 assert not result.isError()
             else:
                 # final message (non-full message)
-                result = self._client.write_registers(address, self._buf[address :])
+                result = self._client.write_registers(address, self._buf[index:])
                 assert not result.isError()
 
     def __setitem__(self, index, colour):
@@ -82,7 +83,7 @@ class NeoPixel:
 
 if __name__ == "__main__":
 
-    pixels = NeoPixel(n = 6, brightness=1, host='192.168.0.232')
+    pixels = NeoPixel(n = 10, brightness=1, host='192.168.0.232')
     pixels.fill(0xFF0033)
     pixels.show()
 
