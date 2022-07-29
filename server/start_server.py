@@ -2,6 +2,12 @@ import logging
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
+import sys
+import os
+this_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(this_dir, '..'))
+from utils import Words
+
 from pymodbus.datastore import (
     ModbusServerContext,
     ModbusSlaveContext,
@@ -51,7 +57,7 @@ class Colour:
     @classmethod
     def from_registers(cls, registers):
         assert len(registers) == 2
-        return Colour(registers[0] & 0x00FF, (registers[0] & 0xFF00) >> 8, registers[1] & 0x00FF)
+        return Colour(registers[0] & 0x00FF, (registers[1] & 0xFF00) >> 8, registers[1] & 0x00FF)
 
     def to_registers(self) -> tuple:
         return ((self.red << 8) + self.green, self.blue)

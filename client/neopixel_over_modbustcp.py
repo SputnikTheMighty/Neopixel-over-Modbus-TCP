@@ -95,7 +95,7 @@ class NeoPixel:
 if __name__ == "__main__":
 
     pixels = NeoPixel(n = 10, brightness=1, host='192.168.0.232')
-    pixels.fill(0xFF7533)
+    pixels.fill(0xFFFE33)
     pixels.show()
 
     pixels.brightness = 0.6
