@@ -53,6 +53,9 @@ class Colour:
         assert len(registers) == 2
         return Colour(registers[0] & 0x00FF, (registers[0] & 0xFF00) >> 8, registers[1] & 0x00FF)
 
+    def to_registers(self) -> tuple:
+        return ((self.red << 8) + self.green, self.blue)
+
 
 def split_16bit_list_into_colours(register_list):
 
@@ -75,7 +78,7 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         print(f"got message address {address}")
         if address == register.GLOBAL_BRIGHTNESS:
             print(f"setting brightness!: {values}")
-            self.pixels.set_brightness(values)
+            self.pixels.brightness(values)
             address += 2
             values = values[2:]
             if len(values) == 0:
@@ -84,7 +87,7 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         colours = split_16bit_list_into_colours(values)
         for index, colour in enumerate(colours):
             self.pixels[index] = colour()
-            print(f"set pixel {index}")
+            print(f"set pixel {index} to {colour}")
 
 
 def run_callback_server(num):

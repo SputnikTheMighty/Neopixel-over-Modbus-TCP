@@ -1,11 +1,19 @@
 import struct
 from pymodbus.client.sync import ModbusTcpClient
 from math import ceil
+  
+# importing
+import sys
+import os
+this_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(this_dir, '..'))
+from utils import Words
 
 REGISTERS_PER_PIXEL = 2 # 1 register = 2 bytes, therefore need 2 registers for full RGB
 MAX_REG_PER_MESSAGE = 124 # from modbus standard
 
 GRB = 'GRB'
+RGB = 'RGB'
 
 class Board:
     D18 = 5
@@ -42,7 +50,6 @@ class NeoPixel:
                 assert not result.isError()
             else:
                 # final message (non-full message)
-                print(f"writing final message, address {address}, len = {len(self._buf[index:])}")
                 result = self._client.write_registers(address, self._buf[index:])
                 assert not result.isError()
 
@@ -52,13 +59,16 @@ class NeoPixel:
         Takes int in form 0x00RRGGBB or tuple (red, green, blue) 
         '''
         if isinstance(colour, int):
-            self._buf[2 * index] = (colour & 0xFF0000) >> 16
-            self._buf[2 * index + 1] = colour & 0x00FFFF
+            byte_src = colour.to_bytes(4, 'big')
+            regs = Words.from_bytes(byte_src, 'big')
 
         if isinstance(colour, tuple):
             assert len(colour) == 3
-            self._buf[2 * index] = colour[0]
-            self._buf[2 * index] = (colour[1] << 8) + colour[2]
+            regs = Words.from_bytes(colour, 'big')
+        
+        print(regs)
+        self._buf[2 * index] = regs[0]
+        self._buf[(2 * index) + 1] = regs[1]
 
     @property
     def brightness(self):
@@ -85,7 +95,7 @@ class NeoPixel:
 if __name__ == "__main__":
 
     pixels = NeoPixel(n = 10, brightness=1, host='192.168.0.232')
-    pixels.fill(0xFF0033)
+    pixels.fill(0xFF7533)
     pixels.show()
 
     pixels.brightness = 0.6

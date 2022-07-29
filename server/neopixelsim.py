@@ -20,10 +20,12 @@ class Pixel:
     def show(self):
         print("rendering!")
 
-    def fill(self):
-        pass
+    @property
+    def brightness(self):
+        return self._brightness
 
-    def set_brightness(self, value):
+    @brightness.setter
+    def brightness(self, value):
         self._brightness = value
 
     def __len__(self):
