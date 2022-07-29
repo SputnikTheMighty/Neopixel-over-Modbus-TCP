@@ -91,7 +91,7 @@ def run_callback_server(num):
     context = ModbusServerContext(slaves=store, single=True)
 
     StartTcpServer(context, address=("0.0.0.0", 5020))
-    print(pixels[num - 1])
+    print(pixels[0])
 
 
 if __name__ == "__main__":

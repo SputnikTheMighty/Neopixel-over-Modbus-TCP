@@ -4,7 +4,12 @@ from math import ceil
 REGISTERS_PER_PIXEL = 2 # 1 register = 2 bytes, therefore need 2 registers for full RGB
 MAX_REG_PER_MESSAGE = 124 # from modbus standard
 
-class Neopixel:
+GRB = 'GRB'
+
+class Board:
+    D18 = 5
+
+class NeoPixel:
 
     def __init__(self, n, brightness, host, *args, **kwargs) -> None:
         self._brightness = brightness
@@ -13,7 +18,7 @@ class Neopixel:
         self._client = ModbusTcpClient(host, port=5020)
         self._client.connect()
         if not self._client.is_socket_open():
-            return ConnectionError
+            print("No Connection!")
         self.num_msgs = ceil(n*REGISTERS_PER_PIXEL/MAX_REG_PER_MESSAGE)
 
     def fill(self, colour):
@@ -47,6 +52,6 @@ class Neopixel:
 
 if __name__ == "__main__":
 
-    pixels = Neopixel(n = 10, brightness=1, host='192.168.0.232')
+    pixels = NeoPixel(n = 10, brightness=1, host='192.168.0.232')
     pixels.fill(0xFF0033)
     pixels.show()

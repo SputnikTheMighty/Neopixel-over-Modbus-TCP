@@ -6,6 +6,7 @@ try:
     import neopixel
 except (ModuleNotFoundError, NotImplementedError):
     import neopixel_over_modbustcp as neopixel
+    from neopixel_over_modbustcp import Board as board
 
 
 def wheel(pos):
