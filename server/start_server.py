@@ -65,9 +65,9 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
     and passes the operation to a message queue for further processing.
     """
 
-    def __init__(self, address, values):
-        self.pixels = neopixel.Pixel(len(values)/2 + 1, auto_write=True) # +1 for global brightness
+    def __init__(self, address, values, pixels):
         super().__init__(address, values)
+        self.pixels = pixels
 
     def setValues(self, address, values):  # pylint: disable=arguments-differ
         super().setValues(address, values)
@@ -85,12 +85,13 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
 def run_callback_server(num):
     """Run callback server."""
 
-    block = CallbackDataBlock(0, [0]*2*num)
+    pixels = neopixel.Pixel(n=num, auto_write=True) 
+    block = CallbackDataBlock(0, [0]*(2*num + 1), pixels) # 2 registers per pixel and +1 for global brightness
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
     context = ModbusServerContext(slaves=store, single=True)
 
     StartTcpServer(context, address=("0.0.0.0", 5020))
-    print(block.pixels[num])
+    print(pixels[num - 1])
 
 
 if __name__ == "__main__":

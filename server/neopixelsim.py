@@ -14,7 +14,7 @@ class Pixel:
     def __init__(self, n, *args, **kwargs) -> None:
         self._pixels = n
         self._bytes = bpp * n
-        self.pixel_array = [ [0]*bpp for i in range(n)]
+        self.pixel_array = [0 for i in range(n)]
         self._brightness = 1
 
     def show(self):
@@ -37,7 +37,11 @@ class Pixel:
         return len(self)
 
     def __setitem__(self, index, colour):
-        self.pixel_array[index] = colour
+        if isinstance(colour, int):
+            self.pixel_array[index] = colour
+        if isinstance(colour, tuple):
+            assert len(colour) == 3
+            self.pixel_array[index] == (colour[0] << 16) + (colour[1] << 8) + colour[2]
 
     def __getitem__(self, index):
         return self.pixel_array[index]
