@@ -34,7 +34,7 @@ class NeoPixel:
     def show(self):
         ''' Send entire pixel array over Modbus TCP '''
         for msg in range(self.num_msgs):
-            address = (msg * MAX_REG_PER_MESSAGE) + Registers.START_OF_PIXELS - 1
+            address = (msg * MAX_REG_PER_MESSAGE) + Registers.START_OF_PIXELS
             index = (msg * MAX_REG_PER_MESSAGE)
             if msg < self.num_msgs - 1:
                 # full message
@@ -42,6 +42,7 @@ class NeoPixel:
                 assert not result.isError()
             else:
                 # final message (non-full message)
+                print(f"writing final message, address {address}, len = {len(self._buf[index:])}")
                 result = self._client.write_registers(address, self._buf[index:])
                 assert not result.isError()
 
@@ -76,7 +77,7 @@ class NeoPixel:
         # write to server
         byte_value = int.from_bytes(struct.pack('f', value), 'big')
         register_values = [(byte_value & 0xFFFF0000) >> 16, (byte_value & 0x0000FFFF)]
-        result = self._client.write_registers(0, register_values)
+        result = self._client.write_registers(Registers.GLOBAL_BRIGHTNESS, register_values)
         if not result.isError():
             self._brightness = value
 

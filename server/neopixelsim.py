@@ -42,6 +42,7 @@ class Pixel:
         elif isinstance(colour, int):
             self.pixel_array[index] = (((colour&0xFF0000) >> 16), ((colour&0x00FF00) >> 8), ((colour&0x0000FF) >> 0))
         elif isinstance(colour, bytes):
+            print(f"setting {index} with {colour}")
             self.pixel_array[index] = (colour[0], colour[1], colour[2])
 
 

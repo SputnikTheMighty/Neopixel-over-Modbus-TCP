@@ -22,8 +22,8 @@ REGISTERS_PER_PIXEL = 2
 from enum import IntEnum
 
 class register(IntEnum):
-    GLOBAL_BRIGHTNESS = 0
-    PIXEL_START = 1
+    GLOBAL_BRIGHTNESS = 1
+    PIXEL_START = 3
 
 class Colour:
     def __init__(self, red, green, blue):
@@ -72,15 +72,19 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
 
     def setValues(self, address, values):  # pylint: disable=arguments-differ
         super().setValues(address, values)
-
+        print(f"got message address {address}")
         if address == register.GLOBAL_BRIGHTNESS:
-            self.pixels.set_brightness(values[0])
-            address += 1
-            values = values[1:]
+            print(f"setting brightness!: {values}")
+            self.pixels.set_brightness(values)
+            address += 2
+            values = values[2:]
+            if len(values) == 0:
+                return
         
         colours = split_16bit_list_into_colours(values)
         for index, colour in enumerate(colours):
-            self.pixels[address + index] = colour()
+            self.pixels[index] = colour()
+            print(f"set pixel {index}")
 
 
 def run_callback_server(num):
