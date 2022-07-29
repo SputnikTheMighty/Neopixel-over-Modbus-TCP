@@ -1,6 +1,8 @@
 # Neopixel over Modbus TCP
 
-This repository aims to remotely control a set of Neopixels via a Modbus TCP server running on a RaspberryPi.
+This repository aims to remotely control a set of Neopixels via a Modbus TCP server running on a RaspberryPi. It's aimed at large installations (~800 leds) with high update rates (~30 fps). This allows the processing of the data to be done on a more powerful PC and then the frames sent to the RPi over ethernet to be rendered. Future updates will eliminate the RPi and only require a basic ethernet-enabled microcontroller. Using Wifi is also possible but will drastically reduce performance.
+
+The client side functions are designed to mimic exactly the functions of the Adafruit Circuit Python Library for Neopixels. This allows you to swap the code directly from an RPi to a PC without making changes. 
 
 ## Setup
 ### On Raspberry Pi
