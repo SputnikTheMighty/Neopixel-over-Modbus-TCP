@@ -47,11 +47,14 @@ class NeoPixel:
             if msg < self.num_msgs - 1:
                 # full message
                 result = self._client.write_registers(address, self._buf[index : index + MAX_REG_PER_MESSAGE])
-                assert not result.isError()
+                if result.isError():
+                    print(result)
             else:
                 # final message (non-full message)
+                print(f"sending message len {len(self._buf[index:])}, address {address}")
                 result = self._client.write_registers(address, self._buf[index:])
-                assert not result.isError()
+                if result.isError():
+                    print(result)
 
     def __setitem__(self, index, colour):
         ''' 
@@ -94,8 +97,16 @@ class NeoPixel:
 
 if __name__ == "__main__":
 
-    pixels = NeoPixel(n = 10, brightness=1, host='192.168.0.232')
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
+    parser.add_argument("-a", "--address", required=True, type=str, help="IP address of modbus server")
+    args = parser.parse_args()
+
+    pixels = NeoPixel(n=args.num, brightness=1, host=args.address)
     pixels.fill(0xFFFE33)
     pixels.show()
+
+    print("written pixels")
 
     pixels.brightness = 0.6

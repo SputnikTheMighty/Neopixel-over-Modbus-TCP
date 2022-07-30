@@ -99,8 +99,8 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
 def run_callback_server(num):
     """Run callback server."""
 
-    pixels = neopixel.Pixel(n=num, auto_write=True) 
-    block = CallbackDataBlock(0, [0]*(REGISTERS_PER_PIXEL*num + 2), pixels) # 2 registers per pixel and +2 for global brightness
+    pixels = neopixel.Pixel(n=num, auto_write=True)
+    block = CallbackDataBlock(1, [0]*((REGISTERS_PER_PIXEL*num) + 2), pixels) # 2 registers per pixel and +2 for global brightness
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
     context = ModbusServerContext(slaves=store, single=True)
 
