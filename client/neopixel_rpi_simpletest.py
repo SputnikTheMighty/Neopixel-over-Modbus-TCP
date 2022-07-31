@@ -40,13 +40,25 @@ def rainbow_cycle(wait):
 
 if __name__ == "__main__":
 
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
+    parser.add_argument("-a", "--address", type=str, help="IP address of modbus server")
+    args = parser.parse_args()
+
     pixel_pin = board.D18
-    num_pixels = 30
+    num_pixels = args.num
     ORDER = neopixel.GRB
 
-    pixels = neopixel.NeoPixel(
-        pixel_pin, num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER
-    )
+    try:
+        pixels = neopixel.NeoPixel(
+                Pin=pixel_pin, n=num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER,
+            )
+    except TypeError as e:
+        pixels = neopixel.NeoPixel(
+            Pin=pixel_pin, n=num_pixels, brightness=0.2, auto_write=False, pixel_order=ORDER,
+            host=args.address
+        )
     
     while True:
 

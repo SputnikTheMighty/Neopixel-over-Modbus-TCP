@@ -62,12 +62,12 @@ class NeoPixel:
         Takes int in form 0x00RRGGBB or tuple (red, green, blue) 
         '''
         if isinstance(colour, int):
-            byte_src = colour.to_bytes(4, 'big')
-            regs = Words.from_bytes(byte_src, 'big')
+            colour = colour & 0xFFFFFFFF
+            regs = Words.from_int(colour, 'big')
 
         if isinstance(colour, tuple):
             assert len(colour) == 3
-            regs = Words.from_bytes(colour, 'big')
+            regs = Words.from_bytes(bytes(colour), 'big')
         
         print(regs)
         self._buf[2 * index] = regs[0]
@@ -89,7 +89,7 @@ class NeoPixel:
 
         # write to server
         byte_value = int.from_bytes(struct.pack('f', value), 'big')
-        register_values = [(byte_value & 0xFFFF0000) >> 16, (byte_value & 0x0000FFFF)]
+        register_values = Words.from_int(byte_value, endian='big', length=2)
         result = self._client.write_registers(Registers.GLOBAL_BRIGHTNESS, register_values)
         if not result.isError():
             self._brightness = value
