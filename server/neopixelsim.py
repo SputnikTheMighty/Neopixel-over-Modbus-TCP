@@ -7,6 +7,9 @@ GRBW = 'GRBW'
 RGB = 'RGB'
 RGBW = 'RGBW'
 
+class Board:
+    D18 = 5
+
 bpp = 3
 
 class Pixel:
@@ -40,12 +43,12 @@ class Pixel:
 
     def __setitem__(self, index, colour):
         if isinstance(colour, tuple):
-            self.pixel_array[index] = colour
+            self.pixel_array[index] = colour[0:3]
         elif isinstance(colour, int):
-            self.pixel_array[index] = (((colour&0xFF0000) >> 16), ((colour&0x00FF00) >> 8), ((colour&0x0000FF) >> 0))
+            self.pixel_array[index] = tuple((colour & 0x00FFFFFF).to_bytes(3, 'big'))
         elif isinstance(colour, bytes):
             print(f"setting {index} with {colour}")
-            self.pixel_array[index] = (colour[0], colour[1], colour[2])
+            self.pixel_array[index] = tuple(colour[0:3])
 
 
     def __getitem__(self, index):
@@ -56,6 +59,7 @@ if __name__ == "__main__":
     pixels = Pixel(6)
     pixels[3] = (7,8,9)
     pixels[5] = 4829
+    pixels[2] = bytes((33, 78, 2))
 
     print(pixels.pixel_array)
     print(pixels[3])

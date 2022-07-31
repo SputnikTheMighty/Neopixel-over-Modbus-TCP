@@ -115,5 +115,5 @@ if __name__ == "__main__":
     words_from_int = Words.from_int(0xFF778899, endian='big', length=2)
     print(words_from_int)
 
-    words_to_int = words_from_int.to_int(endian='little')
+    words_to_int = words_from_int.to_int(endian='big')
     print(hex(words_to_int))
