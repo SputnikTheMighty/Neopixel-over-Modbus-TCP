@@ -1,9 +1,11 @@
 import logging
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+_LOGGER = logging.getLogger(__name__)
+
 
 import sys
 import os
+import struct
+
 this_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(this_dir, '..'))
 from utils import Words
@@ -46,11 +48,15 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         super().setValues(address, values)
         
         if address == register.GLOBAL_BRIGHTNESS:
-            print(f"setting brightness!: {values}")
-            self.pixels.brightness(values)
+            _LOGGER.debug(f"setting brightness!: {values[0:2]}")
+            byte_value = Words(values[0:2]).to_bytes(endian='big')
+            float_value = struct.unpack('f', byte_value)[0]
+            _LOGGER.debug(f"setting brightness as float: {float_value}")
+            self.pixels.brightness = float_value
             address += 2
             values = values[2:]
             if len(values) == 0:
+                _LOGGER.debug("nothing more to do!")
                 return
         
         colours = zip(values[0::2], values[1::2]) # 2 registers for every pixel
@@ -86,4 +92,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.DEBUG)
+
     run_callback_server(args.num)
