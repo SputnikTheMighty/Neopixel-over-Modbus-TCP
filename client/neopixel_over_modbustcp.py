@@ -5,12 +5,16 @@ from math import ceil
 # importing
 import sys
 import os
+import logging
+
 this_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(this_dir, '..'))
 from utils import Words
 
 REGISTERS_PER_PIXEL = 2 # 1 register = 2 bytes, therefore need 2 registers for full RGB
-MAX_REG_PER_MESSAGE = 124 # from modbus standard
+MAX_REG_PER_MESSAGE = 123 # from modbus standard
+
+_LOGGER = logging.getLogger(__name__)
 
 GRB = 'GRB'
 RGB = 'RGB'
@@ -32,7 +36,8 @@ class NeoPixel:
         self._client.connect()
         if not self._client.is_socket_open():
             print("No Connection!")
-        self.num_msgs = ceil(n*REGISTERS_PER_PIXEL/MAX_REG_PER_MESSAGE)
+        self.num_msgs = ceil(n * REGISTERS_PER_PIXEL / MAX_REG_PER_MESSAGE)
+        _LOGGER.debug(f"number of messages per frame = {self.num_msgs}")
 
     def fill(self, colour):
         ''' Set all pixels to one colour '''
@@ -46,15 +51,16 @@ class NeoPixel:
             index = (msg * MAX_REG_PER_MESSAGE)
             if msg < self.num_msgs - 1:
                 # full message
+                _LOGGER.debug(f"sending message len {len(self._buf[index:index + MAX_REG_PER_MESSAGE])}, address {address}")
                 result = self._client.write_registers(address, self._buf[index : index + MAX_REG_PER_MESSAGE])
                 if result.isError():
-                    print(result)
+                    _LOGGER.error(result)
             else:
                 # final message (non-full message)
-                print(f"sending message len {len(self._buf[index:])}, address {address}")
+                _LOGGER.debug(f"sending message len {len(self._buf[index:])}, address {address}")
                 result = self._client.write_registers(address, self._buf[index:])
                 if result.isError():
-                    print(result)
+                    _LOGGER.error(result)
 
     def __setitem__(self, index, colour):
         ''' 
@@ -63,13 +69,12 @@ class NeoPixel:
         '''
         if isinstance(colour, int):
             colour = colour & 0xFFFFFFFF
-            regs = Words.from_int(colour, 'big')
+            regs = Words.from_int(colour, 'big', length=REGISTERS_PER_PIXEL)
 
         if isinstance(colour, tuple):
             assert len(colour) == 3
             regs = Words.from_bytes(bytes(colour), 'big')
         
-        print(regs)
         self._buf[2 * index] = regs[0]
         self._buf[(2 * index) + 1] = regs[1]
 
@@ -88,9 +93,9 @@ class NeoPixel:
             return
 
         # write to server
-        byte_value = int.from_bytes(struct.pack('f', value), 'big')
-        register_values = Words.from_int(byte_value, endian='big', length=2)
-        result = self._client.write_registers(Registers.GLOBAL_BRIGHTNESS, register_values)
+        byte_value = struct.pack('f', value)
+        register_values = Words.from_bytes(byte_value, endian='big')
+        result = self._client.write_registers(Registers.GLOBAL_BRIGHTNESS, register_values[0:])
         if not result.isError():
             self._brightness = value
 
@@ -102,6 +107,8 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
     parser.add_argument("-a", "--address", required=True, type=str, help="IP address of modbus server")
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.DEBUG)
 
     pixels = NeoPixel(n=args.num, brightness=1, host=args.address)
     pixels.fill(0xFFFE33)
