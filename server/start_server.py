@@ -49,25 +49,31 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         
         if address == register.GLOBAL_BRIGHTNESS:
             _LOGGER.debug(f"setting brightness!: {values[0:2]}")
-            float_value = struct.unpack('f', values[0:2])
+            byte_value = Words(values[0:2]).to_bytes(endian='big')
+            float_value = struct.unpack('f', byte_value)[0]
             _LOGGER.debug(f"setting brightness as float: {float_value}")
-            self.pixels.brightness(float_value)
+            self.pixels.brightness = float_value
             address += 2
             values = values[2:]
             if len(values) == 0:
+                _LOGGER.debug("nothing more to do!")
                 return
         
         colours = zip(values[0::2], values[1::2]) # 2 registers for every pixel
                
         for i, colour in enumerate(colours):
             regs = Words(colour)
-            self.pixels[i+address] = regs.to_int(endian='big')
+            self.pixels[i + address] = regs.to_int(endian='big')
+
+        self.pixels.show()
 
 
 def run_callback_server(num):
     """Run callback server."""
 
-    pixels = neopixel.Pixel(Pin=board.D18, n=num, auto_write=True, pixel_order=neopixel.GRB)
+    pixels = neopixel.NeoPixel(pin=board.D18, n=num, auto_write=False, pixel_order=neopixel.GRB)
+    pixels.fill(0x00FF00)
+    pixels.show()
     block = CallbackDataBlock(1, [0]*((REGISTERS_PER_PIXEL*num) + 2), pixels) # 2 registers per pixel and +2 for global brightness
     store = ModbusSlaveContext(di=block, co=block, hr=block, ir=block)
     context = ModbusServerContext(slaves=store, single=True)
@@ -91,6 +97,6 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
     args = parser.parse_args()
 
-    logging.setLevel(logging.DEBUG)
+    #logging.basicConfig(level=logging.DEBUG)
 
     run_callback_server(args.num)
