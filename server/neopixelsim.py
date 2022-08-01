@@ -28,7 +28,14 @@ class Pixel:
         return self._brightness
 
     @brightness.setter
-    def brightness(self, value):
+    def brightness(self, value: float):
+
+        # check value is valid
+        value = min(max(value, 0.0), 1.0)
+        change = value - self._brightness
+        if -0.001 < change < 0.001:
+            return
+
         self._brightness = value
 
     def __len__(self):

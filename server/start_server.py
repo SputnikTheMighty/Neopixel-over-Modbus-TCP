@@ -97,6 +97,6 @@ if __name__ == "__main__":
     parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
     args = parser.parse_args()
 
-    #logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG)
 
     run_callback_server(args.num)
