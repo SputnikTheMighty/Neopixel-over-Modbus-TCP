@@ -7,7 +7,7 @@ parser.add_argument("-a", "--address", required=True)
 parser.add_argument("-f", "--frames", required=True, type=int)
 args = parser.parse_args()
 
-num_leds = 1000
+num_leds = 720
 num_frames = args.frames
 
 tic = time.perf_counter()
@@ -20,4 +20,4 @@ for i in range(num_frames):
 toc = time.perf_counter()
 time_diff = toc - tic
 
-print(f"Time for {num_frames} frames is {time_diff} ({num_frames/time_diff} fps)")
+print(f"Time for {num_frames} frames is {time_diff} ({num_frames/time_diff} fps) One frame is {time_diff/num_frames}")

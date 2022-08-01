@@ -1,9 +1,11 @@
 import logging
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+_LOGGER = logging.getLogger(__name__)
+
 
 import sys
 import os
+import struct
+
 this_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(this_dir, '..'))
 from utils import Words
@@ -46,8 +48,10 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
         super().setValues(address, values)
         
         if address == register.GLOBAL_BRIGHTNESS:
-            print(f"setting brightness!: {values}")
-            self.pixels.brightness(values)
+            _LOGGER.debug(f"setting brightness!: {values[0:2]}")
+            float_value = struct.unpack('f', values[0:2])
+            _LOGGER.debug(f"setting brightness as float: {float_value}")
+            self.pixels.brightness(float_value)
             address += 2
             values = values[2:]
             if len(values) == 0:
@@ -57,7 +61,7 @@ class CallbackDataBlock(ModbusSequentialDataBlock):
                
         for i, colour in enumerate(colours):
             regs = Words(colour)
-            self.pixels[i] = regs.to_int(endian='big')
+            self.pixels[i+address] = regs.to_int(endian='big')
 
 
 def run_callback_server(num):
@@ -86,4 +90,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--num", required=True, type=int, help="Number of pixels")
     args = parser.parse_args()
+
+    logging.setLevel(logging.DEBUG)
+
     run_callback_server(args.num)

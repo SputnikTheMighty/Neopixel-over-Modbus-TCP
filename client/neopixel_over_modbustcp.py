@@ -29,15 +29,18 @@ class Registers:
 class NeoPixel:
 
     def __init__(self, host, n, brightness=0.5, *args, **kwargs) -> None:
-        self._brightness = brightness
-        self._num_pixels = n
-        self._buf = [0 for i in range(2 * n)]
+        ''' Connect to Neopixel Modbus server '''
         self._client = ModbusTcpClient(host, port=5020)
         self._client.connect()
         if not self._client.is_socket_open():
             print("No Connection!")
+            raise ConnectionError
+
+        self._brightness = brightness
+        self._num_pixels = n
+        self._buf = [0 for i in range(2 * n)]
         self.num_msgs = ceil(n * REGISTERS_PER_PIXEL / MAX_REG_PER_MESSAGE)
-        _LOGGER.debug(f"number of messages per frame = {self.num_msgs}")
+        _LOGGER.info(f"number of messages per frame = {self.num_msgs}")
 
     def fill(self, colour):
         ''' Set all pixels to one colour '''
@@ -51,13 +54,13 @@ class NeoPixel:
             index = (msg * MAX_REG_PER_MESSAGE)
             if msg < self.num_msgs - 1:
                 # full message
-                _LOGGER.debug(f"sending message len {len(self._buf[index:index + MAX_REG_PER_MESSAGE])}, address {address}")
+                _LOGGER.info(f"sending message len {len(self._buf[index:index + MAX_REG_PER_MESSAGE])}, address {address}")
                 result = self._client.write_registers(address, self._buf[index : index + MAX_REG_PER_MESSAGE])
                 if result.isError():
                     _LOGGER.error(result)
             else:
                 # final message (non-full message)
-                _LOGGER.debug(f"sending message len {len(self._buf[index:])}, address {address}")
+                _LOGGER.info(f"sending message len {len(self._buf[index:])}, address {address}")
                 result = self._client.write_registers(address, self._buf[index:])
                 if result.isError():
                     _LOGGER.error(result)
@@ -85,6 +88,7 @@ class NeoPixel:
 
     @brightness.setter
     def brightness(self, value: float):
+        ''' This ain't thread-safe watchout ''' 
 
         # check value is valid
         value = min(max(value, 0.0), 1.0)
@@ -108,10 +112,16 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--address", required=True, type=str, help="IP address of modbus server")
     args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     pixels = NeoPixel(n=args.num, brightness=1, host=args.address)
-    pixels.fill(0xFFFE33)
+    pixels.fill(0xFF0000)
+    pixels.show()
+
+    import time
+    time.sleep(5)
+
+    pixels.fill(0x0000FF)
     pixels.show()
 
     print("written pixels")
